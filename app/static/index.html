@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAGWORKS | Autonomous Research</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #020617);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agent-active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Markdown Styling */
+        #report-content h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1rem; color: #3b82f6; }
+        #report-content h2 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid #334155; padding-bottom: 0.25rem; }
+        #report-content p { margin-bottom: 1rem; line-height: 1.6; }
+        #report-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        #report-content li { margin-bottom: 0.5rem; }
+        #report-content blockquote { border-left: 4px solid #3b82f6; padding-left: 1rem; font-style: italic; color: #94a3b8; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="max-w-6xl mx-auto flex justify-between items-center mb-12">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/50">
+                <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight">RAG<span class="text-blue-500">WORKS</span></h1>
+        </div>
+        <div class="text-slate-400 text-sm hidden md:block">
+            Powered by MCP + Multi-Agent Architecture
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Sidebar: Input & Status -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- Search Box -->
+            <div class="glass p-6 rounded-2xl shadow-xl">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="search" class="w-5 h-5 text-blue-400"></i>
+                    Research Query
+                </h3>
+                <textarea id="query-input" placeholder="What would you like to research?" 
+                    class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 h-32 focus:outline-none focus:border-blue-500 transition-all resize-none mb-4"></textarea>
+                <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-blue-900/40 flex justify-center items-center gap-2">
+                    Start Research
+                </button>
+            </div>
+
+            <!-- Agent Workflow -->
+            <div class="glass p-6 rounded-2xl">
+                <h3 class="text-lg font-semibold mb-6 flex items-center gap-2">
+                    <i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i>
+                    Agent Activity
+                </h3>
+                <div class="space-y-4">
+                    <div id="node-intake" class="flex items-center gap-4 p-3 rounded-xl border border-slate-800 transition-all">
+                        <div class="p-2 bg-slate-800 rounded-lg"><i data-lucide="layout-grid" class="w-5 h-5"></i></div>
+                        <div><p class="font-semibold text-sm">Intake Agent</p><p class="text-xs text-slate-500" id="status-intake">Waiting...</p></div>
+                    </div>
+                    <div id="node-researcher" class="flex items-center gap-4 p-3 rounded-xl border border-slate-800 transition-all">
+                        <div class="p-2 bg-slate-800 rounded-lg"><i data-lucide="microscope" class="w-5 h-5"></i></div>
+                        <div><p class="font-semibold text-sm">Researcher</p><p class="text-xs text-slate-500" id="status-researcher">Waiting...</p></div>
+                    </div>
+                    <div id="node-reviewer" class="flex items-center gap-4 p-3 rounded-xl border border-slate-800 transition-all">
+                        <div class="p-2 bg-slate-800 rounded-lg"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                        <div><p class="font-semibold text-sm">Reviewer</p><p class="text-xs text-slate-500" id="status-reviewer">Waiting...</p></div>
+                    </div>
+                    <div id="node-writer" class="flex items-center gap-4 p-3 rounded-xl border border-slate-800 transition-all">
+                        <div class="p-2 bg-slate-800 rounded-lg"><i data-lucide="pen-tool" class="w-5 h-5"></i></div>
+                        <div><p class="font-semibold text-sm">Writer</p><p class="text-xs text-slate-500" id="status-writer">Waiting...</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Live Logs / Plan -->
+            <div id="activity-panel" class="hidden glass p-6 rounded-2xl min-h-[100px]">
+                <h3 class="text-lg font-semibold mb-4 text-blue-400">Research Plan</h3>
+                <div id="plan-list" class="space-y-2 text-sm text-slate-300">
+                    <!-- Dynamic plan steps -->
+                </div>
+            </div>
+
+            <!-- Final Report View -->
+            <div id="report-panel" class="hidden glass p-8 rounded-2xl shadow-2xl overflow-hidden border-t-4 border-blue-500">
+                <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-800">
+                    <h2 class="text-2xl font-bold">Research Report</h2>
+                    <button onclick="window.print()" class="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+                        <i data-lucide="printer" class="w-5 h-5 text-slate-400"></i>
+                    </button>
+                </div>
+                <div id="report-content" class="prose prose-invert max-w-none">
+                    <!-- Markdown Content -->
+                </div>
+            </div>
+
+            <!-- Sources List -->
+            <div id="sources-panel" class="hidden space-y-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                    <i data-lucide="library" class="w-5 h-5 text-amber-400"></i>
+                    Verified Sources
+                </h3>
+                <div id="sources-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Source cards -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        const startBtn = document.getElementById('start-btn');
+        const queryInput = document.getElementById('query-input');
+
+        startBtn.onclick = async () => {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // UI Reset
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Processing...';
+            document.querySelectorAll('[id^="status-"]').forEach(el => el.innerText = 'Waiting...');
+            document.querySelectorAll('[id^="node-"]').forEach(el => el.classList.remove('agent-active'));
+            document.getElementById('plan-list').innerHTML = '';
+            document.getElementById('report-panel').classList.add('hidden');
+            document.getElementById('sources-panel').classList.add('hidden');
+            document.getElementById('activity-panel').classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/research', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const { job_id } = await res.json();
+                
+                const eventSource = new EventSource(`/api/stream/${job_id}`);
+                
+                eventSource.onmessage = (e) => {
+                    const data = JSON.parse(e.data);
+                    
+                    if (data.done) {
+                        eventSource.close();
+                        startBtn.disabled = false;
+                        startBtn.innerText = 'Start Research';
+                        return;
+                    }
+
+                    if (data.node) {
+                        updateUI(data);
+                    }
+                };
+
+                eventSource.onerror = () => {
+                    eventSource.close();
+                    startBtn.disabled = false;
+                    startBtn.innerText = 'Start Research';
+                };
+
+            } catch (err) {
+                console.error(err);
+                startBtn.disabled = false;
+            }
+        };
+
+        function updateUI(data) {
+            const nodeEl = document.getElementById(`node-${data.node}`);
+            const statusEl = document.getElementById(`status-${data.node}`);
+            
+            // Highlight active node
+            document.querySelectorAll('[id^="node-"]').forEach(el => el.classList.remove('agent-active'));
+            if (nodeEl) {
+                nodeEl.classList.add('agent-active');
+                statusEl.innerText = data.status || 'Active...';
+                statusEl.classList.add('text-blue-400', 'pulse');
+            }
+
+            // Update Research Plan
+            if (data.node === 'intake' && data.research_plan) {
+                const panel = document.getElementById('activity-panel');
+                panel.classList.remove('hidden');
+                const list = document.getElementById('plan-list');
+                list.innerHTML = data.research_plan.map(s => 
+                    `<div class="flex gap-2 items-start"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 mt-0.5"></i> <span>[${s.tool}] ${s.query}</span></div>`
+                ).join('');
+                lucide.createIcons();
+            }
+
+            // Update Sources
+            if (data.sources && data.sources.length > 0) {
+                document.getElementById('sources-panel').classList.remove('hidden');
+                const list = document.getElementById('sources-list');
+                list.innerHTML = data.sources.map(s => `
+                    <a href="${s.url}" target="_blank" class="glass p-4 rounded-xl hover:bg-slate-800/50 transition-colors block border-l-2 border-blue-500">
+                        <p class="text-xs text-blue-400 font-semibold mb-1 uppercase tracking-wider">${s.source_type || 'Result'}</p>
+                        <p class="text-sm font-semibold line-clamp-1">${s.title}</p>
+                    </a>
+                `).join('');
+            }
+
+            // Final Report
+            if (data.node === 'writer' && data.report) {
+                const reportPanel = document.getElementById('report-panel');
+                reportPanel.classList.remove('hidden');
+                document.getElementById('report-content').innerHTML = marked.parse(data.report);
+                reportPanel.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>
