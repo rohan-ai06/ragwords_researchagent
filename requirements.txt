@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langgraph
+langchain-groq
+fastmcp
+python-dotenv
+jinja2
+pytest
+tavily-python
+arxiv
+wikipedia

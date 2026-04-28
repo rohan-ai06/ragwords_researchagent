@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.pytest_cache/
+.vscode/
+*.pyc
+app/static/__pycache__/
+app/agents/__pycache__/
+mcp/__pycache__/
+.DS_Store
