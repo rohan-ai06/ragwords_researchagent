@@ -54,13 +54,15 @@ YOUR TASKS:
 1. Look at each result below and decide if it is high-quality and relevant.
 2. Put the 1-based index numbers of good results into "relevant_indices".
 3. If fewer than {MIN_RELEVANT_SOURCES} results are good, fill "retry_plan" with new search steps.
+   CRITICAL: Analyze WHY the current results failed (e.g., too generic, wrong context).
+   Based on that feedback, write completely NEW, highly targeted queries that will succeed.
    Each step needs a "query" string and a "tool" string.
    Valid tool names are: search_web, search_arxiv, search_wikipedia, search_semantic_scholar
 
 RESULTS TO EVALUATE:
 {summaries}
 
-QUERIES ALREADY TRIED (do not repeat these): {tried_queries}
+QUERIES ALREADY TRIED (do not repeat these or anything similar): {tried_queries}
 
 Respond using the ReviewerOutput schema."""
 
