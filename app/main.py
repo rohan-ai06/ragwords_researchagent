@@ -26,14 +26,15 @@ def setup_logging():
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 def print_header():
+    os.system('cls' if os.name == 'nt' else 'clear')
     print("\n" + "="*60)
     print("  RAGWORKS - Autonomous Research & Report Generation")
     print("  Powered by MCP + Multi-Agent Architecture")
     print("="*60)
     if os.getenv("LANGCHAIN_TRACING_V2") == "true":
-        print("  [Observability] LangSmith Tracing: ENABLED 🟢")
+        print("  [Observability] LangSmith Tracing: ENABLED [ON]")
     else:
-        print("  [Observability] LangSmith Tracing: DISABLED 🔴")
+        print("  [Observability] LangSmith Tracing: DISABLED [OFF]")
     print("="*60 + "\n")
 
 def main():
