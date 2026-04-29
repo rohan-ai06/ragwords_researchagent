@@ -4,7 +4,6 @@ from typing import List
 from pydantic import BaseModel, Field
 from langchain_groq import ChatGroq
 
-
 logger = logging.getLogger("ragworks.reviewer")
 
 llm = ChatGroq(
@@ -66,10 +65,19 @@ QUERIES ALREADY TRIED (do not repeat these): {tried_queries}
 Respond using the ReviewerOutput schema."""
 
     structured_llm = llm.with_structured_output(ReviewerOutput)
-    try:
-        result = structured_llm.invoke(prompt).model_dump()
-    except Exception as e:
-        logger.warning(f"Reviewer guardrail: {e}")
+    
+    max_validation_retries = 3
+    result = None
+    
+    for attempt in range(max_validation_retries):
+        try:
+            result = structured_llm.invoke(prompt).model_dump()
+            break
+        except Exception as e:
+            logger.warning(f"Reviewer guardrail (Attempt {attempt+1}/{max_validation_retries}): {e}")
+            
+    if not result:
+        logger.error("Reviewer schema validation failed completely after retries.")
         result = {"relevant_indices": [], "reason": "Failed schema", "retry_plan": []}
 
     curated_res, curated_src = [], []
@@ -90,7 +98,21 @@ Respond using the ReviewerOutput schema."""
             existing_urls.add(r.get("url", ""))
 
     retry_plan = result.get("retry_plan", [])
-    verdict = "approved" if len(prev_curated) >= MIN_RELEVANT_SOURCES or not retry_plan else "retry"
+    
+    # Verdict Logic
+    if len(prev_curated) >= MIN_RELEVANT_SOURCES:
+        verdict = "approved"
+    elif retry_plan:
+        verdict = "retry"
+    else:
+        # If no retry plan was given, but we still have 0 sources, we MUST force a retry
+        if len(prev_curated) == 0:
+            logger.warning("0 sources approved and no retry plan provided. Forcing fallback retry.")
+            verdict = "retry"
+            fallback_query = state.get("research_query", "") or state.get("original_query", "general information")
+            retry_plan = [{"query": fallback_query, "tool": "search_web"}]
+        else:
+            verdict = "approved"
 
     logger.info(f"  Curated: {len(prev_curated)} | Verdict: {verdict.upper()}")
     return {
