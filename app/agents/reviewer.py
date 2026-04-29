@@ -49,14 +49,23 @@ def reviewer_node(state: dict) -> dict:
     for i, r in enumerate(results):
         summaries += f"\nResult {i+1} [{r.get('source', 'tool')}]: {r.get('title', 'Untitled')}\n  {str(r.get('content') or r.get('summary', ''))[:300]}\n"
 
-    prompt = f"""You are a Research Quality Reviewer. 
-1. GRADE each result for relevance.
-2. SELECT only high-quality, non-redundant results.
-3. Design a RETRY PLAN if more data is needed (min {MIN_RELEVANT_SOURCES}).
+    prompt = f"""You are a Research Quality Reviewer. You MUST respond using ONLY the provided JSON schema.
+DO NOT attempt to call any tools directly. You are ONLY evaluating results and filling in JSON fields.
 
-AVAILABLE TOOLKIT: {tools_list}
-RESULTS: {summaries}
-ALREADY TRIED: {tried_queries} """
+YOUR TASKS:
+1. Look at each result below and decide if it is high-quality and relevant.
+2. Put the 1-based index numbers of good results into "relevant_indices".
+3. If fewer than {MIN_RELEVANT_SOURCES} results are good, fill "retry_plan" with new searches.
+
+For "retry_plan", you may reference these tool names (as strings, NOT as function calls):
+{tools_list}
+
+RESULTS TO EVALUATE:
+{summaries}
+
+QUERIES ALREADY TRIED (do not repeat these): {tried_queries}
+
+IMPORTANT: Output ONLY the JSON schema. Do NOT call any tools."""
 
     structured_llm = llm.with_structured_output(ReviewerOutput)
     try:
