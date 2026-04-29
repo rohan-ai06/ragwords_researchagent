@@ -48,4 +48,4 @@ def search_semantic_scholar(query: str, max_results: int = 3) -> str:
     except: return json.dumps([])
 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport="sse", port=8000)

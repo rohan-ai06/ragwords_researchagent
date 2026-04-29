@@ -2,11 +2,11 @@ import os
 import asyncio
 from fastmcp import Client
 
-MCP_SERVER_PATH = os.path.join(os.path.dirname(__file__), "..", "mcp", "mcp_server.py")
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8000/sse")
 
 async def _get_tools_async():
     try:
-        async with Client(MCP_SERVER_PATH) as client:
+        async with Client(MCP_SERVER_URL) as client:
             tools = await client.list_tools()
             docs = []
             for t in tools:

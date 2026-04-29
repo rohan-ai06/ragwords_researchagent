@@ -5,7 +5,7 @@ import logging
 from fastmcp import Client
 
 logger = logging.getLogger("ragworks.researcher")
-MCP_SERVER_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "mcp", "mcp_server.py")
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8000/sse")
 
 async def _execute_plan_step(client, step: dict) -> tuple[list[dict], list[dict]]:
     query, tool = step.get("query", ""), step.get("tool", "")
@@ -30,7 +30,7 @@ async def _run_dynamic_search(plan: list) -> tuple[list[dict], list[dict]]:
     parallel_steps = [s for s in plan if s.get("tool") != "search_arxiv"]
     sequential_steps = [s for s in plan if s.get("tool") == "search_arxiv"]
 
-    async with Client(MCP_SERVER_PATH) as client:
+    async with Client(MCP_SERVER_URL) as client:
         # 1. Execute Parallel Block
         if parallel_steps:
             logger.info(f"  Firing {len(parallel_steps)} parallel search tasks...")
